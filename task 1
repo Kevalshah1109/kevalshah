@@ -1,0 +1,62 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/ERC20.sol";
+
+contract MyToken is ERC20 {
+    constructor(string memory name, string memory symbol, uint256 initialSupply) ERC20(name, symbol) {
+        // Mint initial supply to the contract deployer's address
+        _mint(msg.sender, initialSupply * (10 ** uint256(decimals())));
+    }
+
+    // Function to transfer tokens from one account to another
+    function transferTokens(address recipient, uint256 amount) public returns (bool) {
+        require(balanceOf(msg.sender) >= amount, "Insufficient balance");
+        _transfer(msg.sender, recipient, amount);
+        return true;
+    }
+}
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract Token {
+    string public name = "MyToken";
+    string public symbol = "MTK";
+    uint8 public decimals = 18;
+    uint256 public totalSupply;
+    
+    mapping(address => uint256) public balanceOf;
+    mapping(address => mapping(address => uint256)) public allowance;
+    
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+    
+    constructor(uint256 _initialSupply) {
+        totalSupply = _initialSupply * 10 ** uint256(decimals);
+        balanceOf[msg.sender] = totalSupply;
+    }
+    
+    function transfer(address _to, uint256 _value) public returns (bool success) {
+        require(balanceOf[msg.sender] >= _value, "Insufficient balance");
+        balanceOf[msg.sender] -= _value;
+        balanceOf[_to] += _value;
+        emit Transfer(msg.sender, _to, _value);
+        return true;
+    }
+    
+    function approve(address _spender, uint256 _value) public returns (bool success) {
+        allowance[msg.sender][_spender] = _value;
+        emit Approval(msg.sender, _spender, _value);
+        return true;
+    }
+    
+    function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
+        require(balanceOf[_from] >= _value, "Insufficient balance");
+        require(allowance[_from][msg.sender] >= _value, "Allowance exceeded");
+        balanceOf[_from] -= _value;
+        balanceOf[_to] += _value;
+        allowance[_from][msg.sender] -= _value;
+        emit Transfer(_from, _to, _value);
+        return true;
+    }
+}
