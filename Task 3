@@ -1,0 +1,64 @@
+// TASK - 3: DEVELOP A DEFI APPLICATION FOR LENDING AND BORROWING TOKENS
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+/**
+ * @title DeFiLending
+ * @dev A simple decentralized finance (DeFi) application for lending and borrowing tokens with dynamic interest rates.
+ */
+contract DeFiLending {
+    address public owner;
+    uint256 public interestRate; // Dynamic interest rate
+    mapping(address => uint256) public deposits;
+    mapping(address => uint256) public borrowings;
+    
+    event Deposited(address indexed user, uint256 amount);
+    event Borrowed(address indexed user, uint256 amount);
+    event Repaid(address indexed user, uint256 amount);
+    
+    constructor(uint256 _interestRate) {
+        owner = msg.sender;
+        interestRate = _interestRate;
+    }
+    
+    /**
+     * @dev Allows users to deposit tokens into the lending pool.
+     * @param amount The amount of tokens to deposit.
+     */
+    function deposit(uint256 amount) public {
+        deposits[msg.sender] += amount;
+        emit Deposited(msg.sender, amount);
+    }
+    
+    /**
+     * @dev Allows users to borrow tokens from the lending pool.
+     * @param amount The amount of tokens to borrow.
+     */
+    function borrow(uint256 amount) public {
+        require(deposits[msg.sender] >= amount / 2, "Collateral required");
+        borrowings[msg.sender] += amount + (amount * interestRate / 100);
+        emit Borrowed(msg.sender, amount);
+    }
+    
+    /**
+     * @dev Allows users to repay their borrowed tokens.
+     * @param amount The amount of tokens to repay.
+     */
+    function repay(uint256 amount) public {
+        require(borrowings[msg.sender] >= amount, "Repay amount exceeds borrowings");
+        borrowings[msg.sender] -= amount;
+        emit Repaid(msg.sender, amount);
+    }
+}
+
+// TASK - 3 DELIVERABLES:
+// - Smart contract for lending and borrowing tokens.
+// - Frontend to interact with the smart contract.
+// - Integration with a test blockchain (Ethereum testnet such as Goerli or Sepolia).
+
+// DEPLOYMENT INSTRUCTIONS:
+// 1. Compile and deploy the contract using Remix or Hardhat.
+// 2. Use a testnet (e.g., Goerli, Sepolia) for deployment.
+// 3. Connect the frontend to interact with the smart contract.
+// 4. Test lending and borrowing functionalities with dynamic interest rates.
