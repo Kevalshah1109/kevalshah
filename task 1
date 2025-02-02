@@ -1,41 +1,75 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+// Importing OpenZeppelin's ERC20 contract implementation
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/ERC20.sol";
 
+/**
+ * @title MyToken
+ * @dev This contract implements an ERC-20 token using OpenZeppelin's standard contract.
+ */
 contract MyToken is ERC20 {
+    /**
+     * @dev Constructor initializes the token with a name, symbol, and initial supply.
+     * @param name Name of the token
+     * @param symbol Token symbol
+     * @param initialSupply Initial supply of tokens in whole units (not considering decimals)
+     */
     constructor(string memory name, string memory symbol, uint256 initialSupply) ERC20(name, symbol) {
         // Mint initial supply to the contract deployer's address
         _mint(msg.sender, initialSupply * (10 ** uint256(decimals())));
     }
 
-    // Function to transfer tokens from one account to another
+    /**
+     * @dev Function to transfer tokens from the caller's account to another account.
+     * @param recipient Address to receive tokens
+     * @param amount Number of tokens to transfer
+     * @return bool Returns true if the transfer is successful
+     */
     function transferTokens(address recipient, uint256 amount) public returns (bool) {
         require(balanceOf(msg.sender) >= amount, "Insufficient balance");
         _transfer(msg.sender, recipient, amount);
         return true;
     }
 }
+
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+/**
+ * @title Token
+ * @dev Custom ERC-20 like token implementation without OpenZeppelin.
+ */
 contract Token {
-    string public name = "MyToken";
-    string public symbol = "MTK";
-    uint8 public decimals = 18;
-    uint256 public totalSupply;
+    string public name = "MyToken"; // Token name
+    string public symbol = "MTK"; // Token symbol
+    uint8 public decimals = 18; // Number of decimal places
+    uint256 public totalSupply; // Total token supply
     
+    // Mapping of account balances
     mapping(address => uint256) public balanceOf;
+    // Mapping of allowances for delegated token transfers
     mapping(address => mapping(address => uint256)) public allowance;
     
+    // Events for logging transfers and approvals
     event Transfer(address indexed from, address indexed to, uint256 value);
     event Approval(address indexed owner, address indexed spender, uint256 value);
     
+    /**
+     * @dev Constructor initializes the total supply and assigns it to the deployer.
+     * @param _initialSupply Initial supply of tokens in whole units (not considering decimals)
+     */
     constructor(uint256 _initialSupply) {
-        totalSupply = _initialSupply * 10 ** uint256(decimals);
-        balanceOf[msg.sender] = totalSupply;
+        totalSupply = _initialSupply * 10 ** uint256(decimals); // Adjusting for decimal places
+        balanceOf[msg.sender] = totalSupply; // Assign all tokens to contract deployer
     }
     
+    /**
+     * @dev Transfers tokens from the sender's address to another address.
+     * @param _to Recipient address
+     * @param _value Amount of tokens to transfer
+     * @return bool Returns true if the transfer is successful
+     */
     function transfer(address _to, uint256 _value) public returns (bool success) {
         require(balanceOf[msg.sender] >= _value, "Insufficient balance");
         balanceOf[msg.sender] -= _value;
@@ -44,12 +78,25 @@ contract Token {
         return true;
     }
     
+    /**
+     * @dev Approves another address to spend tokens on behalf of the sender.
+     * @param _spender Address authorized to spend tokens
+     * @param _value Amount of tokens approved for spending
+     * @return bool Returns true if approval is successful
+     */
     function approve(address _spender, uint256 _value) public returns (bool success) {
         allowance[msg.sender][_spender] = _value;
         emit Approval(msg.sender, _spender, _value);
         return true;
     }
     
+    /**
+     * @dev Transfers tokens on behalf of another account (requires prior approval).
+     * @param _from Address sending tokens
+     * @param _to Recipient address
+     * @param _value Amount of tokens to transfer
+     * @return bool Returns true if the transfer is successful
+     */
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
         require(balanceOf[_from] >= _value, "Insufficient balance");
         require(allowance[_from][msg.sender] >= _value, "Allowance exceeded");
